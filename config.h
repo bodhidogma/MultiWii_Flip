@@ -34,7 +34,7 @@
   /**************************    The type of multicopter    ****************************/
     //#define GIMBAL
     //#define BI
-    #define TRI
+    //#define TRI
     //#define QUADP
     //#define QUADX
     //#define Y4
@@ -46,7 +46,7 @@
     //#define OCTOFLATP
     //#define OCTOFLATX
     //#define FLYING_WING
-    //#define VTAIL4
+    #define VTAIL4
     //#define AIRPLANE
     //#define SINGLECOPTER
     //#define DUALCOPTER
