@@ -40,13 +40,13 @@
     //#define Y4
     //#define Y6
     //#define HEX6
-    //#define HEX6X
+    #define HEX6X
     //#define HEX6H  // New Model
     //#define OCTOX8
     //#define OCTOFLATP
     //#define OCTOFLATX
     //#define FLYING_WING
-    #define VTAIL4
+    //#define VTAIL4
     //#define AIRPLANE
     //#define SINGLECOPTER
     //#define DUALCOPTER
@@ -380,7 +380,7 @@
       /* PIN A0 and A1 instead of PIN D5 & D6 for 6 motors config and promini config
          This mod allow the use of a standard receiver on a pro mini
          (no need to use a PPM sum receiver) */
-      //#define A0_A1_PIN_HEX
+      #define A0_A1_PIN_HEX
 
     /*********************************    Aux 2 Pin     ***********************************/
       /* possibility to use PIN8 or PIN12 as the AUX2 RC input (only one, not both)
