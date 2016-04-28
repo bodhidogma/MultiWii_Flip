@@ -634,8 +634,8 @@
        in NMEA mode the GPS must be configured to output GGA and RMC NMEA sentences (which is generally the default conf for most GPS devices)
        at least 5Hz update rate. uncomment the first line to select the GPS serial port of the arduino */
        
-   //#define GPS_SERIAL 2         // should be 2 for flyduino v2. It's the serial port number on arduino MEGA
-    #define GPS_PROMINI_SERIAL   // Will Autosense if GPS is connected when ardu boots.
+    //#define GPS_SERIAL 2         // should be 2 for flyduino v2. It's the serial port number on arduino MEGA
+    //#define GPS_PROMINI_SERIAL   // Will Autosense if GPS is connected when ardu boots.
 
     // avoid using 115200 baud because with 16MHz arduino the 115200 baudrate have more than 2% speed error (57600 have 0.8% error)
     #define GPS_BAUD   57600
