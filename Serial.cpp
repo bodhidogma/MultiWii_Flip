@@ -149,15 +149,16 @@ void SerialEnd(uint8_t port) {
   }
 }
 
+// we don't care about ring buffer overflow (head->tail) to avoid a test condition : data is lost anyway if it happens 
 void store_uart_in_buf(uint8_t data, uint8_t portnum) {
-  #if defined(SPEKTRUM)
-    if (portnum == SPEK_SERIAL_PORT) {
+  #if defined(SERIAL_RX)
+    if (portnum == RX_SERIAL_PORT) {
       if (!spekFrameFlags) { 
         sei();
         uint32_t spekTimeNow = (timer0_overflow_count << 8) * (64 / clockCyclesPerMicrosecond()); //Move timer0_overflow_count into registers so we don't touch a volatile twice
         uint32_t spekInterval = spekTimeNow - spekTimeLast;                                       //timer0_overflow_count will be slightly off because of the way the Arduino core timer interrupt handler works; that is acceptable for this use. Using the core variable avoids an expensive call to millis() or micros()
         spekTimeLast = spekTimeNow;
-        if (spekInterval > 5000) {  //Potential start of a Spektrum frame, they arrive every 11 or every 22 ms. Mark it, and clear the buffer. 
+        if (spekInterval > 2500) {  //Potential start of a Spektrum frame, they arrive every 11 or every 22 ms. Mark it, and clear the buffer. 
           serialTailRX[portnum] = 0;
           serialHeadRX[portnum] = 0;
           spekFrameFlags = 0x01;
@@ -168,9 +169,8 @@ void store_uart_in_buf(uint8_t data, uint8_t portnum) {
   #endif
 
   uint8_t h = serialHeadRX[portnum];
-  if (++h >= RX_BUFFER_SIZE) h = 0;
-  if (h == serialTailRX[portnum]) return; // we did not bite our own tail?
-  serialBufferRX[serialHeadRX[portnum]][portnum] = data;  
+  serialBufferRX[h++][portnum] = data;
+  if (h >= RX_BUFFER_SIZE) h = 0;
   serialHeadRX[portnum] = h;
 }
 
@@ -207,7 +207,7 @@ uint8_t SerialRead(uint8_t port) {
   return c;
 }
 
-#if defined(SPEKTRUM)
+#if defined(SERIAL_RX)
   uint8_t SerialPeek(uint8_t port) {
     uint8_t c = serialBufferRX[serialTailRX[port]][port];
     if ((serialHeadRX[port] != serialTailRX[port])) return c; else return 0;

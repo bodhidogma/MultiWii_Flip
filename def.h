@@ -36,6 +36,7 @@
   #define SPEKTRUM 2048
   #define LED_RING
   #define GPS_SERIAL 2
+  #define NMEA
   #define LOG_VALUES 2
   #define LOG_PERMANENT
   #define LOG_PERMANENT_SERVICE_LIFETIME 36000
@@ -62,6 +63,8 @@
   #define LOG_PERMANENT_SERVICE_LIFETIME 36000
   #define GOVERNOR_P 0
   #define GOVERNOR_D 10
+  #define YAW_COLL_PRECOMP 15
+  #define YAW_COLL_PRECOMP_DEADBAND 130
   #define VOLTAGEDROP_COMPENSATION
 #elif COPTERTEST == 6
   #define HEX6H
@@ -81,6 +84,8 @@
   #define LCD_CONF
 #elif COPTERTEST == 7
   #define HELI_120_CCPM
+  #define YAW_COLL_PRECOMP 15
+  #define YAW_COLL_PRECOMP_DEADBAND 130
   #define NANOWII
   #define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  = X; imu.accADC[PITCH]  =  Y; imu.accADC[YAW]  =  Z;}
   #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] = X; imu.gyroADC[YAW] = -Z;}
@@ -109,6 +114,23 @@
   #define ITG3200
   #define PID_CONTROLLER 2
   #define ESC_CALIB_CANNOT_FLY
+#elif COPTERTEST == 9
+  #define AIRPLANE
+  #define FREEIMUv035
+  #define POWERMETER_HARD
+  #define WATTS
+  #define VBAT
+  #define VBAT_CELLS
+  #define VBAT_CELLS_NUM 3
+  #define VBAT_CELLS_PINS {A0, A1, A2 }
+  #define VBAT_CELLS_OFFSETS {0, 50, 83 }
+  #define VBAT_CELLS_DIVS { 75, 122,  98 }
+#elif COPTERTEST == 10
+  #define Y6
+  #define CRIUS_AIO_PRO
+  #define LCD_LCD03S
+  #define SERIAL0_COM_SPEED 9600
+  #define LCD_CONF
 #elif defined(COPTERTEST)
   #error "*** this test is not yet defined"
 #endif
@@ -302,7 +324,7 @@
     #define STABLEPIN_OFF              ;
   #endif 
   #define PPM_PIN_INTERRUPT          attachInterrupt(0, rxInt, RISING); //PIN 0
-  #define SPEK_SERIAL_PORT           0
+  #define RX_SERIAL_PORT             0
   //RX PIN assignment inside the port //for PORTD
   #define THROTTLEPIN                2
   #define ROLLPIN                    4
@@ -429,8 +451,8 @@
   #define STABLEPIN_ON               ;
   #define STABLEPIN_OFF              ;
   #define PPM_PIN_INTERRUPT          DDRE &= ~(1 << 6);PORTE |= (1 << 6); EICRB |= (1 << ISC61)|(1 << ISC60); EIMSK |= (1 << INT6);
-  #if !defined(SPEK_SERIAL_PORT)
-    #define SPEK_SERIAL_PORT         1
+  #if !defined(RX_SERIAL_PORT)
+    #define RX_SERIAL_PORT           1
   #endif
   #define USB_CDC_TX                 3
   #define USB_CDC_RX                 2
@@ -569,8 +591,8 @@
   #else
     #define PPM_PIN_INTERRUPT        attachInterrupt(4, rxInt, RISING);  //PIN 19, also used for Spektrum satellite option
   #endif
-  #if !defined(SPEK_SERIAL_PORT)
-    #define SPEK_SERIAL_PORT         1
+  #if !defined(RX_SERIAL_PORT)
+    #define RX_SERIAL_PORT           1
   #endif
   //RX PIN assignment inside the port //for PORTK
   #define THROTTLEPIN                0  //PIN 62 =  PIN A8
@@ -600,9 +622,10 @@
   #define SERVO_3_PINMODE            pinMode(33,OUTPUT); pinMode(46,OUTPUT); // CAM TRIG  - alt TILT_PITCH
   #define SERVO_3_PIN_HIGH           PORTC |= 1<<4;PORTL |= 1<<3;
   #define SERVO_3_PIN_LOW            PORTC &= ~(1<<4);PORTL &= ~(1<<3);
-  #define SERVO_4_PINMODE            pinMode (37, OUTPUT);                   // new       - alt TILT_ROLL
-  #define SERVO_4_PIN_HIGH           PORTC |= 1<<0;
-  #define SERVO_4_PIN_LOW            PORTC &= ~(1<<0);
+  #define SERVO_4_PINMODE            pinMode (37, OUTPUT);pinMode(7,OUTPUT); // new       - alt TILT_ROLL
+  #define SERVO_4_PIN_HIGH           PORTC |= 1<<0; PORTH |= 1<<4;
+  #define SERVO_4_PIN_LOW            PORTC &= ~(1<<0);PORTH &= ~(1<<4);
+
   #define SERVO_5_PINMODE            pinMode(6,OUTPUT);                      // BI LEFT
   #define SERVO_5_PIN_HIGH           PORTH |= 1<<3;
   #define SERVO_5_PIN_LOW            PORTH &= ~(1<<3);
@@ -629,7 +652,7 @@
   #define LEDPIN_OFF                 PORTD &= ~(1<<4);  
   #define LEDPIN_ON                  PORTD |= (1<<4);     
   #define SPEK_BAUD_SET              UCSR0A  = (1<<U2X0); UBRR0H = ((F_CPU  / 4 / 115200 -1) / 2) >> 8; UBRR0L = ((F_CPU  / 4 / 115200 -1) / 2);
-  #define SPEK_SERIAL_PORT           0
+  #define RX_SERIAL_PORT             0
 
   /* Unavailable pins on MONGOOSE1_0 */
   #define BUZZERPIN_PINMODE          ; // D8
@@ -931,6 +954,12 @@
   #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -X; imu.gyroADC[PITCH] = -Y; imu.gyroADC[YAW] = -Z;}
   #undef INTERNAL_I2C_PULLUPS
   // move motor 7 & 8 to pin 4 & A2
+  #undef SOFT_PWM_3_PIN_HIGH
+  #undef SOFT_PWM_3_PIN_LOW
+  #undef SOFT_PWM_4_PIN_HIGH
+  #undef SOFT_PWM_4_PIN_LOW
+  #undef SW_PWM_P3
+  #undef SW_PWM_P4
   #define SOFT_PWM_3_PIN_HIGH        PORTD |= 1<<4;
   #define SOFT_PWM_3_PIN_LOW         PORTD &= ~(1<<4);
   #define SOFT_PWM_4_PIN_HIGH        PORTF |= 1<<5;
@@ -939,6 +968,12 @@
   #define SW_PWM_P4                  A2
   #define HWPWM6
   // move servo 3 & 4 to pin 13 & 11
+  #undef SERVO_3_PINMODE
+  #undef SERVO_3_PIN_HIGH
+  #undef SERVO_3_PIN_LOW
+  #undef SERVO_4_PINMODE
+  #undef SERVO_4_PIN_HIGH
+  #undef SERVO_4_PIN_LOW
   #define SERVO_3_PINMODE   DDRC |= (1<<7); // 13
   #define SERVO_3_PIN_HIGH  PORTC |= 1<<7;
   #define SERVO_3_PIN_LOW   PORTC &= ~(1<<7);
@@ -947,6 +982,10 @@
   #define SERVO_4_PIN_LOW   PORTB &= ~(1<<7);
   // use pin 4 as status LED output if we have no octo
   #if !defined(OCTOX8) && !defined(OCTOFLATP) && !defined(OCTOFLATX)
+    #undef LEDPIN_PINMODE
+    #undef LEDPIN_TOGGLE
+    #undef LEDPIN_OFF
+    #undef LEDPIN_ON
     #define LEDPIN_PINMODE             DDRD |= (1<<4);            //D4 to output
     #define LEDPIN_TOGGLE              PIND |= (1<<5)|(1<<4);     //switch LEDPIN state (Port D5) & pin D4
     #define LEDPIN_OFF                 PORTD |= (1<<5); PORTD &= ~(1<<4);
@@ -1019,7 +1058,7 @@
   #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  =  X; imu.accADC[PITCH]  = -Y; imu.accADC[YAW]  =  Z;}
   #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] =  X; imu.gyroADC[PITCH] =  Y; imu.gyroADC[YAW] = -Z;}
   #define MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  X; imu.magADC[PITCH]  =  Y; imu.magADC[YAW]  = -Z;}
-  #define ITG3200_ADDRESS 0X69
+  #define GYRO_ADDRESS 0X69
 #endif
 
 #if defined(ATAVRSBIN1)
@@ -1081,7 +1120,7 @@
 #endif
 
 #if defined(SIRIUS_MEGAv5_OSD)
-  #define ITG3200 // in fact a ITG3050
+  #define ITG3050
   #define BMA280
   #define MS561101BA
   #define HMC5883
@@ -1123,7 +1162,7 @@
   #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  = -X; imu.accADC[PITCH]  = -Y; imu.accADC[YAW]  =  Z;}
   #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] =  Y; imu.gyroADC[PITCH] = -X; imu.gyroADC[YAW] = -Z;}
   #define MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  X; imu.magADC[PITCH]  =  Y; imu.magADC[YAW]  = -Z;}
-  #define ITG3200_ADDRESS 0X69
+  #define GYRO_ADDRESS 0X69
   #if defined(DROTEK_10DOF_MS)
     #define MS561101BA
   #elif defined(DROTEK_10DOF)
@@ -1136,7 +1175,7 @@
   #define BMA180
   #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  = -Y; imu.accADC[PITCH]  =  X; imu.accADC[YAW]  =  Z;}
   #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -X; imu.gyroADC[PITCH] = -Y; imu.gyroADC[YAW] = -Z;}
-  #define ITG3200_ADDRESS 0X69
+  #define GYRO_ADDRESS 0X69
 #endif
 
 #if defined(DROTEK_6DOF_MPU)
@@ -1264,6 +1303,17 @@
   #undef INTERNAL_I2C_PULLUPS
 #endif
 
+#if defined(GY_88)
+  #define MPU6050
+  #define HMC5883
+  #define BMP085
+  #define ACC_ORIENTATION(X, Y, Z) {imu.accADC[ROLL] = -X; imu.accADC[PITCH] = -Y; imu.accADC[YAW] = Z;}
+  #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = Y; imu.gyroADC[PITCH] = -X; imu.gyroADC[YAW] = -Z;}
+  #define MAG_ORIENTATION(X, Y, Z) {imu.magADC[ROLL] = X; imu.magADC[PITCH] = Y; imu.magADC[YAW] = -Z;}
+  #define MPU6050_I2C_AUX_MASTER // MAG connected to the AUX I2C bus of MPU6050
+  #undef INTERNAL_I2C_PULLUPS
+#endif
+
 #if defined(GY_521)
   #define MPU6050
   #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  = -X; imu.accADC[PITCH]  = -Y; imu.accADC[YAW]  =  Z;}
@@ -1365,7 +1415,7 @@
   #undef INTERNAL_I2C_PULLUPS 
 #endif
 
-#if defined(CRIUS_AIO_PRO_V1) 
+#if defined(CRIUS_AIO_PRO) 
   #define MPU6050 
   #define HMC5883 
   #define MS561101BA 
@@ -1395,13 +1445,14 @@
   #undef INTERNAL_I2C_PULLUPS
   #define MINTHROTTLE 1050
   #define MAXTHROTTLE 2000
-  #define EXT_MOTOR_RANGE
+  #define EXT_MOTOR_32KHZ
   #define VBAT
   #define VBATSCALE       54
   #define VBATLEVEL_WARN1 10
   #define VBATLEVEL_WARN2 10
   #define VBATLEVEL_CRIT  10
   #define NO_VBAT         10
+  #define MOTOR_STOP
 #endif
 
 #if defined(MEGAWAP_V2_STD) 
@@ -1455,7 +1506,7 @@
 #endif
 
 #if defined(FLYDU_ULTRA)
-  #define ITG3200	
+  #define ITG3200
   #define MMA8451Q
   #define MS561101BA
   #define MAG3110
@@ -1591,7 +1642,7 @@
 /***************              Sensor Type definitions              ********************/
 /**************************************************************************************/
 
-#if defined(ADXL345) || defined(BMA020) || defined(BMA180) || defined(BMA280) || defined(NUNCHACK) || defined(MMA7455) || defined(ADCACC) || defined(LIS3LV02) || defined(LSM303DLx_ACC) || defined(MPU6050) || defined(LSM330) || defined(MMA8451Q) || defined(NUNCHUCK)
+#if defined(ADXL345) || defined(BMA020) || defined(BMA180) || defined(BMA280) || defined(MMA7455) || defined(ADCACC) || defined(LIS3LV02) || defined(LSM303DLx_ACC) || defined(MPU6050) || defined(LSM330) || defined(MMA8451Q)
   #define ACC 1
 #else
   #define ACC 0
@@ -1603,7 +1654,7 @@
   #define MAG 0
 #endif
 
-#if defined(ITG3200) || defined(L3G4200D) || defined(MPU6050) || defined(LSM330) || defined(MPU3050) || defined(WMP)
+#if defined(ITG3200) || defined(ITG3050) || defined(L3G4200D) || defined(MPU6050) || defined(LSM330) || defined(MPU3050) || defined(WMP)
   #define GYRO 1
 #else
   #define GYRO 0
@@ -1615,15 +1666,16 @@
   #define BARO 0
 #endif
 
-#if defined(GPS_PROMINI_SERIAL) && defined(PROMINI)
-  #define GPS_SERIAL 0
-  #define GPS_PROMINI
-#endif
-
-#if defined(GPS_SERIAL)  || defined(I2C_GPS) || defined(GPS_FROM_OSD)
+#if defined(GPS_SERIAL)  || defined(I2C_GPS)
   #define GPS 1
 #else
   #define GPS 0
+#endif
+
+#if defined(USE_MSP_WP)
+  #define NAVCAP 1
+#else
+  #define NAVCAP 0
 #endif
 
 #if defined(SRF02) || defined(SRF08) || defined(SRF10) || defined(SRC235) || defined(I2C_GPS_SONAR)
@@ -1632,73 +1684,14 @@
   #define SONAR 0
 #endif
 
+#if defined(EXTENDED_AUX_STATES)
+  #define EXTAUX 1
+#else
+  #define EXTAUX 0
+#endif
 
-#if defined(MMA7455)
-  #define ACC_1G 64
-#endif
-#if defined(MMA8451Q)
-  #define ACC_1G 512
-#endif
-#if defined(ADXL345)
-  #define ACC_1G 265
-#endif
-#if defined(BMA180)
-  #define ACC_1G 255
-#endif
-#if defined(BMA280)
-  #define ACC_1G 255
-#endif
-#if defined(BMA020)
-  #define ACC_1G 63
-#endif
-#if defined(NUNCHACK)
-  #define ACC_1G 200
-#endif
-#if defined(LIS3LV02)
-  #define ACC_1G 256
-#endif
-#if defined(LSM303DLx_ACC)
-  #define ACC_1G 256
-#endif
-#if defined(ADCACC)
-  #define ACC_1G 75
-#endif
-#if defined(MPU6050)
-  #if defined(FREEIMUv04)
-    #define ACC_1G 255
-  #else
-    #define ACC_1G 512
-  #endif
-#endif
-#if defined(LSM330)
-  #define ACC_1G 256
-#endif
-#if defined(NUNCHUCK)
-  #define ACC_1G 200
-#endif
-#if !defined(ACC_1G)
-  #define ACC_1G 256
-#endif
-#define ACCZ_25deg   (int16_t)(ACC_1G * 0.90631) // 0.90631 = cos(25deg) (cos(theta) of accZ comparison)
-#define ACC_VelScale (9.80665f / 10000.0f / ACC_1G)
-
-#if defined(ITG3200)
-  #define GYRO_SCALE (4 / 14.375 * PI / 180.0 / 1000000.0) //ITG3200   14.375 LSB/(deg/s) and we ignore the last 2 bits
-#endif
-#if defined(L3G4200D)
-  #define GYRO_SCALE ((4.0f * PI * 70.0f)/(1000.0f * 180.0f * 1000000.0f))
-#endif
-#if defined(MPU6050)
-  #define GYRO_SCALE (4 / 16.4 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
-#endif
-#if defined(LSM330)
-  #define GYRO_SCALE ((4.0f * PI * 70.0f)/(1000.0f * 180.0f * 1000000.0f)) // like L3G4200D
-#endif
-#if defined(MPU3050)
-  #define GYRO_SCALE (4 / 16.4 * PI / 180.0 / 1000000.0)   //MPU6050 and MPU3050   16.4 LSB/(deg/s) and we ignore the last 2 bits
-#endif
-#if defined(WMP)
-  #define GYRO_SCALE (1.0f/200e6f)
+#if defined(RX_RSSI_CHAN)
+  #define RX_RSSI
 #endif
 
 /**************************************************************************************/
@@ -1745,7 +1738,7 @@
 #elif defined(HEX6H)
   #define MULTITYPE 18
 #elif defined(SINGLECOPTER)
-  #define MULTITYPE 20
+  #define MULTITYPE 21
   #define SERVO_RATES      {30,30,100,0,1,0,1,100}
 #elif defined(DUALCOPTER)
   #define MULTITYPE 20
@@ -1800,11 +1793,16 @@
 
 //all new Special RX's must be added here
 //this is to avoid confusion :)
-#if !defined(SERIAL_SUM_PPM) && !defined(SPEKTRUM) && !defined(SBUS)
+#if !defined(SERIAL_SUM_PPM) && !defined(SPEKTRUM) && !defined(SBUS) && !defined(SUMD)
   #define STANDARD_RX
 #endif
 
+#if defined(SPEKTRUM) || defined(SBUS) || defined(SUMD)
+  #define SERIAL_RX
+#endif
+
 // Spektrum Satellite
+#define BIND_CAPABLE 0  //Used for Spektrum today; can be used in the future for any RX type that needs a bind and has a MultiWii module. 
 #if defined(SPEKTRUM)
   #define SPEK_FRAME_SIZE 16
   #if (SPEKTRUM == 1024)
@@ -1820,6 +1818,7 @@
     #define SPEK_BIND_PULSES 5
   #endif
   #if defined(SPEK_BIND)
+    #define BIND_CAPABLE 1
     #if !defined(SPEK_BIND_GROUND)
       #define SPEK_BIND_GROUND 4
     #endif  
@@ -1838,117 +1837,6 @@
   #define RC_CHANS 12
 #else
   #define RC_CHANS 8
-#endif
-
-
-/**************************************************************************************/
-/***************                       I2C GPS                     ********************/
-/**************************************************************************************/
-#if defined(I2C_GPS)
-  #define I2C_GPS_ADDRESS                         0x20 //7 bits       
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// I2C GPS NAV registers
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-#define I2C_GPS_STATUS_00                            00 //(Read only)
-        #define I2C_GPS_STATUS_NEW_DATA       0x01      // New data is available (after every GGA frame)
-        #define I2C_GPS_STATUS_2DFIX          0x02      // 2dfix achieved
-        #define I2C_GPS_STATUS_3DFIX          0x04      // 3dfix achieved
-        #define I2C_GPS_STATUS_WP_REACHED     0x08      // Active waypoint has been reached (not cleared until new waypoint is set)
-        #define I2C_GPS_STATUS_NUMSATS        0xF0      // Number of sats in view
-
-#define I2C_GPS_COMMAND                              01 // (write only)
-        #define I2C_GPS_COMMAND_POSHOLD       0x01      // Start position hold at the current gps positon
-        #define I2C_GPS_COMMAND_START_NAV     0x02      // get the WP from the command and start navigating toward it
-        #define I2C_GPS_COMMAND_SET_WP        0x03      // copy current position to given WP      
-        #define I2C_GPS_COMMAND_UPDATE_PIDS   0x04      // update PI and PID controllers from the PID registers, this must be called after a pid register is changed
-        #define I2C_GPS_COMMAND_NAV_OVERRIDE  0x05      // do not nav since we tring to controll the copter manually (not implemented yet)
-        #define I2C_GPS_COMMAND_STOP_NAV      0x06      // Stop navigation (zeroes out nav_lat and nav_lon
-        #define I2C_GPS_COMMAND__7            0x07
-        #define I2C_GPS_COMMAND__8            0x08      
-        #define I2C_GPS_COMMAND__9            0x09
-        #define I2C_GPS_COMMAND__a            0x0a
-        #define I2C_GPS_COMMAND__b            0x0b
-        #define I2C_GPS_COMMAND__c            0x0c
-        #define I2C_GPS_COMMAND__d            0x0d
-        #define I2C_GPS_COMMAND__e            0x0e
-        #define I2C_GPS_COMMAND__f            0x0f
-
-        #define I2C_GPS_COMMAND_WP_MASK       0xF0       // Waypoint number
-
-#define I2C_GPS_WP_REG                              02   // Waypoint register (Read only)
-        #define I2C_GPS_WP_REG_ACTIVE_MASK    0x0F       // Active Waypoint lower 4 bits
-        #define I2C_GPS_WP_REG_PERVIOUS_MASK  0xF0       // pervious Waypoint upper 4 bits
-        
-#define I2C_GPS_REG_VERSION                         03   // Version of the I2C_NAV SW uint8_t
-#define I2C_GPS_REG_RES2                            04   // reserved for future use (uint8_t)
-#define I2C_GPS_REG_RES3                            05   // reserved for future use (uint8_t)
-#define I2C_GPS_REG_RES4                            06   // reserved for future use (uint8_t)
-
-
-#define I2C_GPS_LOCATION                            07   // current location 8 byte (lat, lon) int32_t
-#define I2C_GPS_NAV_LAT                             15   // Desired banking towards north/south int16_t
-#define I2C_GPS_NAV_LON                             17   // Desired banking toward east/west    int16_t
-#define I2C_GPS_WP_DISTANCE                         19   // Distance to current WP in cm uint32
-#define I2C_GPS_WP_TARGET_BEARING                   23   // bearing towards current wp 1deg = 1000 int16_t
-#define I2C_GPS_NAV_BEARING                         25   // crosstrack corrected bearing towards current wp 1deg = 1000 int16_t
-#define I2C_GPS_HOME_TO_COPTER_BEARING              27   // bearing from home to copter 1deg = 1000 int16_t
-#define I2C_GPS_DISTANCE_TO_HOME                    29   // distance to home in m int16_t
-        
-#define I2C_GPS_GROUND_SPEED                        31   // GPS ground speed in m/s*100 (uint16_t)      (Read Only)
-#define I2C_GPS_ALTITUDE                            33   // GPS altitude in meters (uint16_t)           (Read Only)
-#define I2C_GPS_GROUND_COURSE                       35   // GPS ground course (uint16_t)
-#define I2C_GPS_RES1                                37   // reserved for future use (uint16_t)
-#define I2C_GPS_TIME                                39   // UTC Time from GPS in hhmmss.sss * 100 (uint32_t)(unneccesary precision) (Read Only)
-
-//Writeable registers from here
-
-#define I2C_GPS_CROSSTRACK_GAIN                     43    // Crosstrack gain *100 (1 - 0.01 100 - 1) uint8_t
-#define I2C_GPS_SPEED_MIN                           44    // Minimum navigation speed cm/s uint8_t
-#define I2C_GPS_SPEED_MAX                           45    // Maximum navigation speed cm/s uint16_t
-#define I2C_GPS_RESERVED                            47    // Reserved for future use
-#define I2C_GPS_WP_RADIUS                           49    // Radius of the wp in cm, within this radius we consider the wp reached (uint16_t)
-
-#define I2C_GPS_NAV_FLAGS                           51    // Controls various functions of the I2C-GPS-NAV module
-        #define I2C_NAV_FLAG_GPS_FILTER          0x80     // If this bit set GPS coordinates are filtered via a 5 element moving average filter
-        #define I2C_NAV_FLAG_LOW_SPEED_D_FILTER  0x40     // If speed below .5m/s ignore D term in POSHOLD_RATE, this supposed to filter out noise
-
-#define I2C_GPS_HOLD_P                              52    // poshold_P  *100 uint16_t
-#define I2C_GPS_HOLD_I                              53    // poshold_I  *100 uint16_t
-#define I2C_GPS_HOLD_IMAX                           54    // poshold_IMAX *1 uint8_t
-
-#define I2C_GPS_HOLD_RATE_P                         55    // poshold_rate_P  *10 uint16_t
-#define I2C_GPS_HOLD_RATE_I                         56    // poshold_rate_I  *100 uint16_t
-#define I2C_GPS_HOLD_RATE_D                         57    // poshold_rate_D  *1000 uint16_t
-#define I2C_GPS_HOLD_RATE_IMAX                      58    // poshold_rate_IMAX *1 uint8_t
-
-#define I2C_GPS_NAV_P                               59    // nav_P  *10 uint16_t
-#define I2C_GPS_NAV_I                               60    // nav_I  *100 uint16_t
-#define I2C_GPS_NAV_D                               61    // nav_D  *1000 uint16_t
-#define I2C_GPS_NAV_IMAX                            62    // nav_IMAX *1 uint8_t
-
-#define I2C_GPS_WP0                                 63   //Waypoint 0 used for RTH location      (R/W)
-#define I2C_GPS_WP1                                 74
-#define I2C_GPS_WP2                                 85
-#define I2C_GPS_WP3                                 96
-#define I2C_GPS_WP4                                 107
-#define I2C_GPS_WP5                                 118
-#define I2C_GPS_WP6                                 129
-#define I2C_GPS_WP7                                 140
-#define I2C_GPS_WP8                                 151
-#define I2C_GPS_WP9                                 162
-#define I2C_GPS_WP10                                173
-#define I2C_GPS_WP11                                184
-#define I2C_GPS_WP12                                195
-#define I2C_GPS_WP13                                206
-#define I2C_GPS_WP14                                217
-#define I2C_GPS_WP15                                228
-
-#define I2C_GPS_SONAR_ALT                           239   // Sonar Altitude
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// End register definition 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 #endif
 
 #if !(defined(DISPLAY_2LINES)) && !(defined(DISPLAY_MULTILINE))
@@ -2072,28 +1960,44 @@
         #error "NUMBER_MOTOR is not set, most likely you have not defined any type of multicopter"
 #endif
 
-#if (defined(LCD_DUMMY) || defined(LCD_SERIAL3W) || defined(LCD_TEXTSTAR) || defined(LCD_VT100) || defined(LCD_TTY) || defined(LCD_ETPP) || defined(LCD_LCD03) || defined(OLED_I2C_128x64) ) || defined(OLED_DIGOLE)
+#if (defined(LCD_DUMMY) || defined(LCD_SERIAL3W) || defined(LCD_TEXTSTAR) || defined(LCD_VT100) || defined(LCD_TTY) || defined(LCD_ETPP) || defined(LCD_LCD03) || defined(LCD_LCD03S) || defined(OLED_I2C_128x64) ) || defined(OLED_DIGOLE)
   #define HAS_LCD
 #endif
 
 #if (defined(LCD_CONF) || defined(LCD_TELEMETRY)) && !(defined(HAS_LCD) )
-  #error "LCD_CONF or LCD_TELEMETRY defined, and choice of LCD not defined.  Uncomment one of LCD_SERIAL3W, LCD_TEXTSTAR, LCD_VT100, LCD_TTY or LCD_ETPP, LCD_LCD03, OLED_I2C_128x64, OLED_DIGOLE"
+  #error "LCD_CONF or LCD_TELEMETRY defined, and choice of LCD not defined.  Uncomment one of LCD_SERIAL3W, LCD_TEXTSTAR, LCD_VT100, LCD_TTY or LCD_ETPP, LCD_LCD03, LCD_LCD03S, OLED_I2C_128x64, OLED_DIGOLE"
 #endif
 
 #if defined(POWERMETER_SOFT) && !(defined(VBAT))
-        #error "to use powermeter, you must also define and configure VBAT"
+  #error "to use powermeter, you must also define and configure VBAT"
+#endif
+
+#if defined(WATTS) && !(defined(POWERMETER_HARD)) && !(defined(VBAT))
+  #error "to compute WATTS, you must also define and configure both POWERMETER_HARD and VBAT"
 #endif
 
 #if defined(LCD_TELEMETRY_AUTO) && !(defined(LCD_TELEMETRY))
-        #error "to use automatic telemetry, you MUST also define and configure LCD_TELEMETRY"
+  #error "to use automatic telemetry, you MUST also define and configure LCD_TELEMETRY"
 #endif
 
 #if defined(LCD_TELEMETRY_STEP) && !(defined(LCD_TELEMETRY))
-        #error "to use single step telemetry, you MUST also define and configure LCD_TELEMETRY"
+  #error "to use single step telemetry, you MUST also define and configure LCD_TELEMETRY"
 #endif
 
 #if defined(A32U4_4_HW_PWM_SERVOS) && !(defined(HELI_120_CCPM))
   #error "for your protection: A32U4_4_HW_PWM_SERVOS was not tested with your coptertype"
+#endif
+
+#if GPS && !defined(NMEA) && !defined(UBLOX) && !defined(MTK_BINARY16) && !defined(MTK_BINARY19) && !defined(INIT_MTK_GPS) && !defined(I2C_GPS)
+  #error "when using GPS you must specify the protocol NMEA, UBLOX..."
+#endif
+
+#if defined(NUNCHUK) || \
+    defined( MPU6050_LPF_256HZ) || defined(MPU6050_LPF_188HZ)  || defined( MPU6050_LPF_98HZ) || defined( MPU6050_LPF_42HZ) || \
+    defined( MPU6050_LPF_20HZ)  || defined( MPU6050_LPF_10HZ)  || defined( MPU6050_LPF_5HZ)  || \
+    defined( ITG3200_LPF_256HZ) || defined( ITG3200_LPF_188HZ) || defined( ITG3200_LPF_98HZ) || defined( ITG3200_LPF_42HZ) || \
+    defined( ITG3200_LPF_20HZ)  || defined( ITG3200_LPF_10HZ)
+  #error "you use one feature that is no longer supported or has undergone a name change"
 #endif
 
 #endif /* DEF_H_ */
