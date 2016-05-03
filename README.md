@@ -23,3 +23,18 @@ To rebuild the software with Arduino, select
 > * ATmega328 (FLIP) or MEGA for mega pro boards
  
  (More details: http://www.readytoflyquads.com/the-rtf-wiki)
+
+# Flip 1.5 Hardware
+* http://www.readytoflyquads.com/flip-mwc-flight-controller
+* ATmega328
+* MPU6050 (Inversense) 6 axis gyro/accelerometer with Motion Processing Unit  
+* pmp: Baro (BMP180)
+* pmp: Mag (HMC5883L)
+
+# Flip 2.0 Hardware
+* http://www.readytoflyquads.com/flip-2-0
+* ATmega328
+* MPU6050 (Inversense) 6 axis gyro/accelerometer with Motion Processing Unit  
+* Baro (BMP085)
+* Mag (HMC5883L)
+
