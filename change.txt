@@ -5,7 +5,7 @@ Documentation for releases should be in the official wiki at
 http://www.multiwii.com/wiki
 
 stable and development versions can be found here:
-http://code.google.com/p/multiwii/downloads/list
+https://code.google.com/p/multiwii/
 For development versions you are on your own - good luck.
 Don't try any development version if you don't follow dev evolution.
 Don't forget a multirotor is something that can be dangerous.
@@ -24,8 +24,145 @@ Don't expect to buy a compatible board and run it without a minimum knowledge.
 
 
 
-main changes 2.2 -> 2.3
+main changes 2.3 -> 2.4
 
+
+
+***GPS***
+
+The main change in this version is for sure the code brought by EOSBandi regarding navigation (supported long time as a standolone MultiWii 2.3navi B7) .
+
+Thanks to this major contribution, MultiWii can now navigate trought multiple WPs in an autonomous way.
+
+The documentation about all define option can be found in this post:
+http://www.multiwii.com/forum/viewtopic.php?viewtopic.php?f=8&t=3989
+
+For the moment, only some GUIs can support this code to program a mission:
+- WinGui from EOSBandi (http://eosbandi.com/downloads )
+- EZ-GUI from Ezio (in google play apps https://play.google.com/store/apps/details?id=com.ezio.multiwii)
+- mwp mission planner from stronnag (https://github.com/stronnag/mwptools)
+
+tmp note for WinGui:
+in order to work with current dev WinGUI, the version number should be switched back to 230.
+otherwise an error message will occur.
+in MultiWii.h , line: #define VERSION 230
+will be soon supported with a new WinGui release
+
+No support in java GUI MultiWiiConf.
+
+Do not forget to activate #define USE_MSP_WP to be able to use waypoints.
+
+The overall code without GPS is much shorter. However due to the change on GPS code, it is no more compatible with a 32u4 proc.
+The GPS code without nav might still work on 328p proc.
+A mega proc is mandatory to benefit from all the GPS functionalities.
+
+internal code modification:
+- dissociate frame parsing & frame computation
+- I2C GPS is no more used as an extension with nav computation. It is now supported as a simple GPS device, and all computations stay in the FC, exactly like Serial GPS device.
+- GPS Serial frame parsing is now part of generic Serial decoding code
+- UBLOX GPS frame parsing improvement
+
+
+
+***IMU computation***
+
+- mostly optimization on computation time not visible for end users: less float and more 16bit integer where it's possible / some specific avr asm multiplication.
+- better accuracy InvSqrt
+- heading is computed even with no mag
+- hungry tasks has been reduced or divided in order to minimize the jitter of loop time.
+  With this improvement, a constant loop time is set a little bit higher than the average and default to 2.8ms.
+
+
+
+***ACC***
+
+- Nunchuk is no more suported
+
+
+
+***Baro MS561101***
+
+- a little bit paradoxal regarding other portion of code approach in multiwii, but float computation tooked from APM appears to be shorter and faster with a minimal approximation.
+- computation time smoothed thanks to a task split
+- #define ALTITUDE_RESET_ON_ARM option is added
+note the baro is still always reset when doing a gyro calibration
+
+
+
+***I2C***
+
+- no more speed change on the fly: all sensors are default to 400kHz.
+- The only exception is when a legacy WMP is still used with a 100kHz speed. So no need to bother any longer about this speed if you don't own a genuine WMP.
+- In case of I2C errors at the init stage, initialization occurs up to 5 times. This should prevent some remaining I2C errors.
+
+
+
+***Brushed motor option***
+
+- brushed motors option on 32u4 proc at 8/16/32 kHz
+- brushed motors option on 328p proc at 1/4/32 kHz
+http://www.multiwii.com/forum/viewtopic.php?viewtopic.php?f=8&t=3635&p=36883#p36877
+
+
+
+***RX receiver***
+
+- SUMD RX type introduction
+- SBUS improvement / SBUS signal scaling to match other receiver range
+- code factorization for all Serial type RX (Spektrum/SUMD/SBUS)
+- adjustable averaging sample (AVERAGING_ARRAY_LENGTH) for non Serial RX. For Serial RX, the averaging code is removed because the signal is already natively digital.
+- Serial RX should now be usable with no glitch during LCD conf
+- RSSI injection on a rc channel
+
+
+
+***MSP***
+
+- new MSP message for ACC TRIM (not used in java MultiWiiConf)
+- new MSP message for cells voltage
+- new MSP messages for GPS navigation
+- remove MSP ack for MSP_SET_RAW_RC, and only for this message
+
+
+
+***Sonar***
+
+- fix Devantech SRFxx code that was broken some time ago. But still no code integrated for alt lock using sonar.
+
+
+
+***Heli***
+
+- experimental : heli yaw precomp dependant on collective pitch
+- experimental : better tail lock tacking intoo account collective pitch
+
+
+
+***Voltage***
+
+- compute watts
+- experimental : individual cells voltage monitoring (alarm portion undone yet) 
+
+
+
+***LCD***
+
+- LCD.lcd03 over serial support added
+
+
+
+*****reference version to compile sketch*****
+
+- MultiWii sketch : windows version of Arduino IDE 1.6.1
+- MultiWiiConf    : processing 1.5.1 with modified verison of ControlP5 to remove blue triangles in value box
+
+
+
+
+
+
+
+main changes 2.2 -> 2.3
 
 
 ***Control mode***
