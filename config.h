@@ -421,8 +421,8 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
     /*********************************    Aux 2 Pin     ***********************************/
       /* possibility to use PIN8 or PIN12 as the AUX2 RC input (only one, not both)
          it deactivates in this case the POWER PIN (pin 12) or the BUZZER PIN (pin 8) */
-      #define RCAUXPIN8
-      //#define RCAUXPIN12
+      //#define RCAUXPIN8
+      #define RCAUXPIN12
 
 
   /**************************************************************************************/
