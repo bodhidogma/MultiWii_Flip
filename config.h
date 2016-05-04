@@ -159,6 +159,9 @@
       //#define MultiWii_32U4_SE_no_baro // Hextronik MultiWii_32U4_SE without the MS561101BA to free flash-memory for other functions
       //#define Flyduino9DOF       // Flyduino 9DOF IMU MPU6050+HMC5883l
       //#define Nano_Plane         // Multiwii Plane version with tail-front LSM330 sensor http://www.radiosait.ru/en/page_5324.html
+      //#define FLIP_15
+      #define FLIP_15PMP
+      //#define FLIP_20
       
     /***************************    independent sensors    ********************************/
       /* leave it commented if you already checked a specific board above */
@@ -168,7 +171,7 @@
       //#define ITG3200
       //#define MPU3050
       //#define L3G4200D
-      #define MPU6050       //combo + ACC
+      //#define MPU6050       //combo + ACC
       //#define LSM330        //combo + ACC
       
       /* I2C accelerometer */
@@ -182,12 +185,12 @@
       //#define MMA8451Q
 
       /* I2C barometer */
-      #define BMP085
+      //#define BMP085
       //#define MS561101BA
 
       /* I2C magnetometer */
       //#define HMC5843
-      #define HMC5883
+      //#define HMC5883
       //#define AK8975
       //#define MAG3110
 
@@ -201,9 +204,9 @@
       //#define ADCACC
 
       /* enforce your individual sensor orientation - even overrides board specific defaults */
-      #define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  =  X; imu.accADC[PITCH]  =  Y; imu.accADC[YAW]  =  Z;}
-      #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] =  X; imu.gyroADC[YAW] = -Z;}
-      #define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  = -X; imu.magADC[PITCH]  = -Y; imu.magADC[YAW]  = -Z;}
+      //#define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  =  X; imu.accADC[PITCH]  =  Y; imu.accADC[YAW]  =  Z;}
+      //#define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] =  X; imu.gyroADC[YAW] = -Z;}
+      //#define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  = -X; imu.magADC[PITCH]  = -Y; imu.magADC[YAW]  = -Z;}
 
       /* Board orientation shift */
       /* If you have frame designed only for + mode and you cannot rotate FC phisycally for flying in X mode (or vice versa)
@@ -422,7 +425,7 @@ At this moment you can use this function only with WinGUI 2.3 release. MultiWiiC
       /* possibility to use PIN8 or PIN12 as the AUX2 RC input (only one, not both)
          it deactivates in this case the POWER PIN (pin 12) or the BUZZER PIN (pin 8) */
       //#define RCAUXPIN8
-      #define RCAUXPIN12
+      //#define RCAUXPIN12
 
 
   /**************************************************************************************/
