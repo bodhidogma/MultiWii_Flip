@@ -160,8 +160,8 @@
       //#define Flyduino9DOF       // Flyduino 9DOF IMU MPU6050+HMC5883l
       //#define Nano_Plane         // Multiwii Plane version with tail-front LSM330 sensor http://www.radiosait.ru/en/page_5324.html
       //#define FLIP_15
-      #define FLIP_15PMP
-      //#define FLIP_20
+      //#define FLIP_15PMP
+      #define FLIP_20
       
     /***************************    independent sensors    ********************************/
       /* leave it commented if you already checked a specific board above */
@@ -1200,6 +1200,33 @@ Also note, that maqgnetic declination changes with time, so recheck your value e
 /*************************************************************************************************/
 /****           END OF CONFIGURABLE PARAMETERS                                                ****/
 /*************************************************************************************************/
+
+#if defined(FLIP_15)
+  #define MPU6050
+  #define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL] =   X; imu.accADC[PITCH] =  Y; imu.accADC[YAW] =   Z;}
+  #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] = X; imu.gyroADC[YAW] = -Z;}
+  #define RCAUXPIN12
+#endif
+
+#if defined(FLIP_15PMP)
+  #define MPU6050
+  #define BMP085
+  #define HMC5883
+  #define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL] =   X; imu.accADC[PITCH] =   Y; imu.accADC[YAW] =   Z;}
+  #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] =  X; imu.gyroADC[YAW] = -Z;}
+  #define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  = -X; imu.magADC[PITCH]  = -Y; imu.magADC[YAW]  = -Z;}
+  #define RCAUXPIN12
+#endif
+
+#if defined(FLIP_20)
+  #define MPU6050
+  #define BMP085
+  #define HMC5883
+  #define FORCE_ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  = -X; imu.accADC[PITCH]  = -Y; imu.accADC[YAW]  =  Z;}
+  #define FORCE_GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] =  Y; imu.gyroADC[PITCH] = -X; imu.gyroADC[YAW] = -Z;}
+  #define FORCE_MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  X; imu.magADC[PITCH]  =  Y; imu.magADC[YAW]  = -Z;}
+  #define RCAUXPIN8
+#endif
 
 #endif /* CONFIG_H_ */
 

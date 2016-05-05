@@ -1638,36 +1638,6 @@
   #undef INTERNAL_I2C_PULLUPS
 #endif
 
-#if defined(FLIP_15)
-  #define MPU6050
-  #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL] =   X; imu.accADC[PITCH] =  Y; imu.accADC[YAW] =   Z;}
-  #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] = X; imu.gyroADC[YAW] = -Z;}
-  #define RCAUXPIN12
-  #undef RCAUXPIN8
-#endif
-
-#if defined(FLIP_15PMP)
-  #define MPU6050
-  #define BMP085
-  #define HMC5883
-  #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL] =   X; imu.accADC[PITCH] =   Y; imu.accADC[YAW] =   Z;}
-  #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] = -Y; imu.gyroADC[PITCH] =  X; imu.gyroADC[YAW] = -Z;}
-  #define MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  = -X; imu.magADC[PITCH]  = -Y; imu.magADC[YAW]  = -Z;}
-  #define RCAUXPIN12
-  #undef RCAUXPIN8
-#endif
-
-#if defined(FLIP_20)
-  #define MPU6050
-  #define BMP085
-  #define HMC5883
-  #define ACC_ORIENTATION(X, Y, Z)  {imu.accADC[ROLL]  = -X; imu.accADC[PITCH]  = -Y; imu.accADC[YAW]  =  Z;}
-  #define GYRO_ORIENTATION(X, Y, Z) {imu.gyroADC[ROLL] =  Y; imu.gyroADC[PITCH] = -X; imu.gyroADC[YAW] = -Z;}
-  #define MAG_ORIENTATION(X, Y, Z)  {imu.magADC[ROLL]  =  X; imu.magADC[PITCH]  =  Y; imu.magADC[YAW]  = -Z;}
-  #define RCAUXPIN8
-  #undef RCAUXPIN12
-#endif
-
 /**************************************************************************************/
 /***************              Sensor Type definitions              ********************/
 /**************************************************************************************/
